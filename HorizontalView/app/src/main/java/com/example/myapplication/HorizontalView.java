@@ -3,6 +3,7 @@ package com.example.myapplication;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
+import android.view.VelocityTracker;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Scroller;
@@ -12,9 +13,10 @@ public class HorizontalView extends ViewGroup {
     private int lastInterceptY;
     private int lastX;
     private int lastY;
-    int currentIndex = 0;
-    int childwidth = 0;
+    private int currentIndex = 0;
+    private int childwidth = 0;
     private Scroller scroller;
+    private VelocityTracker tracker;
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
@@ -31,8 +33,20 @@ public class HorizontalView extends ViewGroup {
                     } else {
                         currentIndex++;
                     }
+                } else {
+                    tracker.computeCurrentVelocity(1000);
+                    float xV = tracker.getXVelocity();
+                    if (Math.abs(xV) > 50) {
+                        if (xV > 0) {
+                            currentIndex--;
+                        } else {
+                            currentIndex++;
+                        }
+                    }
                 }
+                currentIndex = currentIndex < 0 ? 0 : currentIndex > getChildCount() - 1 ? getChildCount() - 1 : currentIndex;
                 smoothScrollTo(currentIndex * childwidth, 0);
+                tracker.clear();
                 break;
             case MotionEvent.ACTION_MOVE:
                 int deltaX = x - lastX;
@@ -47,14 +61,14 @@ public class HorizontalView extends ViewGroup {
     @Override
     public void computeScroll() {
         super.computeScroll();
-        if(scroller.computeScrollOffset()){
-            scrollTo(scroller.getCurrX(),scroller.getCurrY());
+        if (scroller.computeScrollOffset()) {
+            scrollTo(scroller.getCurrX(), scroller.getCurrY());
             postInvalidate();
         }
     }
 
     public void smoothScrollTo(int destX, int destY) {
-        scroller.startScroll(getScrollX(),getScrollY(),destX-getScrollY(),destY-getScrollY(),1000);
+        scroller.startScroll(getScrollX(), getScrollY(), destX - getScrollY(), destY - getScrollY(), 1000);
 
     }
 
@@ -85,14 +99,23 @@ public class HorizontalView extends ViewGroup {
 
     public HorizontalView(Context context) {
         super(context);
+        init();
+    }
+
+    private void init() {
+        scroller = new Scroller(getContext());
+        tracker = VelocityTracker.obtain();
+
     }
 
     public HorizontalView(Context context, AttributeSet attrs) {
         super(context, attrs);
+        init();
     }
 
     public HorizontalView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
+        init();
     }
 
     @Override
