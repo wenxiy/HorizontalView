@@ -54,7 +54,8 @@ public class HorizontalView extends ViewGroup {
     }
 
     public void smoothScrollTo(int destX, int destY) {
-        scroller.startScroll(getScrollX(),getScrollY(),destY,destX-getScrollX(),);
+        scroller.startScroll(getScrollX(),getScrollY(),destX-getScrollY(),destY-getScrollY(),1000);
+
     }
 
     @Override
