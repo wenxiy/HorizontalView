@@ -79,6 +79,10 @@ public class HorizontalView extends ViewGroup {
         int y = (int) ev.getY();
         switch (ev.getAction()) {
             case MotionEvent.ACTION_DOWN:
+                intercept = false;
+                if(!scroller.isFinished()){
+                    scroller.abortAnimation();
+                }
                 break;
             case MotionEvent.ACTION_MOVE:
                 int deltaX = x - lastInterceptX;
@@ -88,6 +92,7 @@ public class HorizontalView extends ViewGroup {
                     break;
                 }
             case MotionEvent.ACTION_UP:
+                intercept=false;
                 break;
         }
         lastX = x;
