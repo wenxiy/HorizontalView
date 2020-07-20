@@ -9,8 +9,8 @@ import android.view.ViewGroup;
 import android.widget.Scroller;
 
 public class HorizontalView extends ViewGroup {
-    private int lastInterceptX;
-    private int lastInterceptY;
+    private int lastInterceptX = 0;
+    private int lastInterceptY = 0;
     private int lastX;
     private int lastY;
     private int currentIndex = 0;
@@ -20,12 +20,16 @@ public class HorizontalView extends ViewGroup {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
+        tracker.addMovement(event);//?
         int x = (int) event.getX();
         int y = (int) event.getY();
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
+                if (!scroller.isFinished()) {
+                    scroller.abortAnimation();//?
+                }
                 break;
-            case MotionEvent.ACTION_UP:
+            case MotionEvent.ACTION_UP://?
                 int distance = getScrollX() - currentIndex * childwidth;
                 if (Math.abs(distance) > childwidth / 2) {
                     if (distance > 0) {
@@ -48,6 +52,8 @@ public class HorizontalView extends ViewGroup {
                 smoothScrollTo(currentIndex * childwidth, 0);
                 tracker.clear();
                 break;
+            default:
+                break;
             case MotionEvent.ACTION_MOVE:
                 int deltaX = x - lastX;
                 scrollBy(-deltaX, 0);
@@ -55,7 +61,7 @@ public class HorizontalView extends ViewGroup {
         }
         lastX = x;
         lastY = y;
-        return super.onTouchEvent(event);
+        return true;
     }
 
     @Override
@@ -67,9 +73,9 @@ public class HorizontalView extends ViewGroup {
         }
     }
 
-    public void smoothScrollTo(int destX, int destY) {
+    public void smoothScrollTo(int destX, int destY) {//?
         scroller.startScroll(getScrollX(), getScrollY(), destX - getScrollY(), destY - getScrollY(), 1000);
-
+        invalidate();
     }
 
     @Override
@@ -80,7 +86,7 @@ public class HorizontalView extends ViewGroup {
         switch (ev.getAction()) {
             case MotionEvent.ACTION_DOWN:
                 intercept = false;
-                if(!scroller.isFinished()){
+                if (!scroller.isFinished()) {
                     scroller.abortAnimation();
                 }
                 break;
@@ -92,7 +98,7 @@ public class HorizontalView extends ViewGroup {
                     break;
                 }
             case MotionEvent.ACTION_UP:
-                intercept=false;
+                intercept = false;
                 break;
         }
         lastX = x;
@@ -140,6 +146,7 @@ public class HorizontalView extends ViewGroup {
             int childHeight = childOne.getMeasuredHeight();
             setMeasuredDimension(childWidth * getChildCount(), childHeight);//设置宽度
         } else if (widthMode == MeasureSpec.AT_MOST) {
+            View childOne = getChildAt(0);
             int childWidth = getChildAt(0).getMeasuredWidth();
             setMeasuredDimension(childWidth * getChildCount(), heightSize);
         } else if (heightMode == MeasureSpec.AT_MOST) {
@@ -157,7 +164,7 @@ public class HorizontalView extends ViewGroup {
             child = getChildAt(i);
             if (child.getVisibility() != View.GONE) {
                 int width = child.getMeasuredWidth();
-                int childWidth = width;
+                childwidth = width;
                 child.layout(left, 0, left + width, child.getMeasuredHeight());
                 left += width;
             }
